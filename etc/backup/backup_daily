@@ -1,0 +1,30 @@
+#!/bin/sh
+cd /
+
+# initialize the tape drive
+mt -f /dev/nst0 stsetoptions scsi2logical
+mt -f /dev/nst0 eod
+
+#log the date and time and the first block of current backup
+echo "`date "+%Y-%m-%d %T"` Begin daily backup." >> /var/log/tape/tape.log | mt -f /dev/nst0 tell >> /var/log/tape/tape.log
+
+
+#backup the directories you need, for example /home, /var/www, change to your needs
+tar cpzf /dev/nst0 home var/www > /dev/null
+
+#write block number at end of backup to log, send e-mail report of succesfull backup or when tape is full. For LTO-3 drives, full is about 40000000, so tape should be changed if block 35000000 has been reached. Otherwise, use tape for next backup. Remember to change to your email address :-)
+
+BLOCK=`mt -f /dev/nst0 tell | sed -e 's/At block \(.*\)./\1/'`
+if test $BLOCK -ge 35000000
+then
+	echo "`date "+%Y-%m-%d %T"` End daily backup." >> /var/log/tape/tape.log
+	echo "Block "$BLOCK". End of tape." >> /var/log/tape/tape.log
+	echo "We have reached block "$BLOCK". Time to change the tape." | mutt -a /var/log/tape/tape.log -s "Tape is full - Backup `date "+%Y-%m-%d %T"`" -- user@email.com
+	mt -f /dev/nst0 rewind
+        mt -f /dev/nst0 offline
+
+else
+	echo "`date "+%Y-%m-%d %T"` End daily backup." >> /var/log/tape/tape.log
+	mt -f /dev/nst0 tell >> /var/log/tape/tape.log
+	echo "Currently at block "$BLOCK"." | mutt -s "Backup `date "+%Y-%m-%d %T"`" -- user@email.com
+fi

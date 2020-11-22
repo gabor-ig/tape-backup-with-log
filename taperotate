@@ -1,0 +1,8 @@
+/var/log/tape/tape.log {
+	size 100M
+	missingok
+	rotate 3
+	notifempty
+	nocompress
+	create 660 root sudo
+}

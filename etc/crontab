@@ -1,0 +1,15 @@
+# /etc/crontab: system-wide crontab
+
+
+#TEMPLATE to add to /etc/crontab for automation of daily backups at 4:25 am each day. Running here with run-parts, so several different backup scripts can be run from /etc/backup. Change to your needs.
+
+MAILTO = user@email.com
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# m h dom mon dow user	command
+25 4   * * * root    cd / && run-parts --report /etc/backup
+
+
+# on startup, initialize the tape drive
+@reboot root mt -f /dev/nst0 stsetoptions scsi2logical

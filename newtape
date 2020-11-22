@@ -1,0 +1,25 @@
+#!/bin/sh
+#first, rotate the tape log
+logrotate -f ~/taperotate
+
+#give the new tape a name or number
+echo "Enter tape number:"
+read TAPENUMBER
+
+#initialize the tape drive, rewind and erase by writing a 0 to the first block
+mt -f /dev/nst0 stsetoptions scsi2logical
+mt -f /dev/nst0 rewind
+tar -cvf /dev/nst0 /dev/null
+mt -f /dev/nst0 eod
+
+#Check if tape succesfully ereased, write to log and report back
+
+BLOCK=`mt -f /dev/nst0 tell | sed -e 's/At block \(.*\)./\1/'`
+if test $BLOCK -gt 0 -a $BLOCK -le 10
+then
+        echo "Now at block "$BLOCK". Tape succesfully initialized."
+	echo "`date "+%Y-%m-%d %T"` Begin new tape number: "$TAPENUMBER"" > /var/log/tape/tape.log
+else
+        echo "Currently at block "$BLOCK". Check for errors."
+fi
+
