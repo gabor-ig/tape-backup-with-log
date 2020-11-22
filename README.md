@@ -9,6 +9,7 @@ Automation is done with /etc/crontab.
 - keep the two scripts "newtape" and "taperotate" in the same folder, ie. /home/user or /srv/tape.
 - update /etc/crontab with the contents of the exaple crontab file here.
 - change directories to backup and your email address in the script "backup_daily" and in the crontab file
+- mkdir /var/log/tape && chmod 755 /var/log/tape
 - see further tips and explanations in the commented scripts
 
 ### Use
